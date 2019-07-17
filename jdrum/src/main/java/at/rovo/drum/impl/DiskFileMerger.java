@@ -350,7 +350,10 @@ public class DiskFileMerger<V extends Serializable, A extends Serializable> impl
                 byte[] byteValue = null;
                 if (valueSize > 0) {
                     byteValue = new byte[valueSize];
-                    kvFile.read(byteValue);
+                    int read = kvFile.read(byteValue);
+                    if (valueSize != read) {
+                        LOG.warn("[{}] - [{}] - not enough bytes read from disk bucket", drumName, writer.getBucketId());
+                    }
                     V value = at.rovo.drum.util.DrumUtils.deserialize(byteValue, this.valueClass);
                     data.setValue(value);
                 }
@@ -360,7 +363,7 @@ public class DiskFileMerger<V extends Serializable, A extends Serializable> impl
             }
             this.unsortingHelper = new ArrayList<>(this.sortedMergeBuffer.size());
             kvFile.setLength(0);
-        } catch (Exception e) {
+        } catch (IOException | ClassNotFoundException e) {
             throw new DrumException(
                     "Error during reading key/values from bucket file! Reason: " + e.getLocalizedMessage(), e);
         }
@@ -434,7 +437,10 @@ public class DiskFileMerger<V extends Serializable, A extends Serializable> impl
                 int auxSize = auxFile.readInt();
                 // next the bytes of the actual auxiliary data are reserved and read from the file
                 byte[] byteAux = new byte[auxSize];
-                auxFile.read(byteAux);
+                int read = auxFile.read(byteAux);
+                if (auxSize != read) {
+                    LOG.warn("[{}] - [{}] - not enough bytes read from auxiliary disk bucket", drumName, writer.getBucketId());
+                }
                 if (auxSize > 0) {
                     // transform the byte-array into a valid Java object of type A
                     A aux = at.rovo.drum.util.DrumUtils.deserialize(byteAux, this.auxClass);

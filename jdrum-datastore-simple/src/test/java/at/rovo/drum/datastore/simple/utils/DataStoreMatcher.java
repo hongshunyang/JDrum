@@ -59,7 +59,7 @@ public class DataStoreMatcher {
     public static <T> Matcher<Map<Long, T>> containsEntries(List<Pair<Long, T>> expected) {
         Status<T> status = new Status<>();
 
-        return new TypeSafeMatcher<Map<Long, T>>() {
+        return new TypeSafeMatcher<>() {
             @Override
             protected boolean matchesSafely(Map<Long, T> actual) {
                 try {

@@ -40,7 +40,7 @@ public class DrumImplTest extends BaseDataStoreTest implements DrumListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    /**
+    /*
      * Example-Output:
      * <p>
      * UniqueKeyUpdate:    -7398944400403122887 Data: null Aux: http://www.java.com

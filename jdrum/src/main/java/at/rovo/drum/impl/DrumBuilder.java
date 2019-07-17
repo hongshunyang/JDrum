@@ -169,13 +169,13 @@ public class DrumBuilder<V extends Serializable, A extends Serializable> impleme
      * @return A new initialized instance of DRUM
      * @throws DrumException If during the initialization of DRUM an error occurred
      */
+    @SuppressWarnings("unchecked")
     public Drum<V, A> build() throws Exception {
         DataStoreMerger<V, A> merger;
         if (this.storeMergerClass != null) {
             try {
                 Constructor constructor =
                         this.storeMergerClass.getConstructor(String.class, Class.class);
-                //noinspection unchecked
                 merger = (DataStoreMerger<V, A>) constructor.newInstance(this.drumName, this.valueClass);
             } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
                 ex.printStackTrace();
@@ -184,7 +184,6 @@ public class DrumBuilder<V extends Serializable, A extends Serializable> impleme
         } else {
             throw new DrumException("No data store merger class found");
         }
-
 
         // in order to keep the interface for the builder clean, the builder is creating a settings object which is
         // only visible within the same package and initializes a new DRUM instance with the settings parameter object

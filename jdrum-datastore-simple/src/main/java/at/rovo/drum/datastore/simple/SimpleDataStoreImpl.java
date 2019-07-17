@@ -135,8 +135,13 @@ public class SimpleDataStoreImpl<V extends Serializable> implements SimpleDataSt
         LOG.trace("value size: {}", valueSize);
         if (valueSize > 0) {
             byte[] byteValue = new byte[valueSize];
-            this.file.read(byteValue);
-            LOG.trace("byte value: {}", Arrays.toString(byteValue));
+            int read = this.file.read(byteValue);
+            if (read != valueSize) {
+                LOG.warn("Unexpected number of bytes read for next entry. Expected {} byes but read {}",
+                        valueSize, read);
+            } else {
+                LOG.trace("byte value: {}", Arrays.toString(byteValue));
+            }
             V value = DrumUtils.deserialize(byteValue, this.valueClass);
             return new InMemoryEntry<>(key, value, null, null);
         }
@@ -371,8 +376,7 @@ public class SimpleDataStoreImpl<V extends Serializable> implements SimpleDataSt
             do {
                 remainingBytes -= segmentSize;
                 if (byte2write < 0) {
-                    // extract the segment before the segment before as the end
-                    // would get overwritten
+                    // extract the segment before the segment as the end will get overwritten
                     int segment;
                     if (remainingBytes > segmentSize) {
                         segment = segmentSize;
@@ -385,11 +389,19 @@ public class SimpleDataStoreImpl<V extends Serializable> implements SimpleDataSt
                     pos -= (segment + segmentSize);
                     this.file.seek(Math.max(0, pos));
                     // read the first segment
-                    this.file.read(partBefore, 0, partBefore.length);
+                    int read = this.file.read(partBefore, 0, partBefore.length);
+                    if (partBefore.length != read) {
+                        LOG.warn("Not enough bytes read for the preceding data entry. Expected {} bytes but read {}",
+                                partBefore.length, read);
+                    }
                     // read the actual segment or reuse the part from the
                     // previous iteration
                     if (initial) {
-                        this.file.read(part, 0, segmentSize);
+                        read = this.file.read(part, 0, segmentSize);
+                        if (segmentSize != read) {
+                            LOG.warn("Not enough bytes read for the actual data entry. Expected {} bytes but read {}",
+                                    segmentSize, read);
+                        }
                     } else {
                         part = partBefore;
                     }
@@ -404,8 +416,10 @@ public class SimpleDataStoreImpl<V extends Serializable> implements SimpleDataSt
                     // and set it to the position
                     this.file.seek(pos);
                     // read the part
-                    if (partBefore == null) {
-                        this.file.read(part, 0, segmentSize);
+                    int read = this.file.read(part, 0, segmentSize);
+                    if (segmentSize != read) {
+                        LOG.warn("Not enough bytes read for the actual data entry. Expected {} bytes but read {}",
+                                segmentSize, read);
                     }
                     // set the cursor to the new position
                     this.file.seek(pos + byte2write);
@@ -422,7 +436,11 @@ public class SimpleDataStoreImpl<V extends Serializable> implements SimpleDataSt
                     // and set it to the position
                     this.file.seek(pos);
                     // read the rest
-                    this.file.read(rest, 0, (int) remainingBytes);
+                    int read = this.file.read(rest, 0, (int) remainingBytes);
+                    if ((int) remainingBytes != read) {
+                        LOG.warn("Not enough bytes read for the remaining data entries. Expected {} bytes but read {}",
+                                segmentSize, read);
+                    }
                     // set the cursor to the new position
                     this.file.seek(pos + byte2write);
                     // and write the bytes

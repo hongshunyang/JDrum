@@ -11,6 +11,29 @@
 
     <artifactId>jdrum</artifactId>
 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>
+                        <!-- Allow access to the tests during test-time -->
+                        --add-opens jdrum/at.rovo.drum.impl=ALL-UNNAMED
+                        --illegal-access=deny
+                    </argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>12</source>
+                    <target>12</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>at.rovo</groupId>
@@ -28,7 +51,6 @@
             <artifactId>jcip-annotations</artifactId>
         </dependency>
 
-        <!-- Test data store to use for testing-->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -41,6 +63,7 @@
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
         </dependency>
+        <!-- Test data store to use for testing-->
         <dependency>
             <groupId>at.rovo</groupId>
             <artifactId>jdrum-datastore-simple</artifactId>
@@ -55,20 +78,5 @@
             <type>test-jar</type>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>
-                        <!-- Allow access to the tests during test-time -->
-                        --add-opens jdrum/at.rovo.drum.impl=ALL-UNNAMED
-                        --illegal-access=deny
-                    </argLine>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>
